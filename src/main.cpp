@@ -134,7 +134,7 @@ static void display_page_network(const SensorData& s) {
     s_canvas.setTextColor(DISPLAY_FG);
     s_canvas.setTextSize(2);
     s_canvas.setCursor(4, 42);
-    s_canvas.print(WIFI_AP_SSID);
+    s_canvas.print(g_config.ap_ssid.c_str());
 
     s_canvas.setTextColor(TFT_WHITE);
     s_canvas.setTextSize(1);
@@ -142,28 +142,35 @@ static void display_page_network(const SensorData& s) {
     s_canvas.print("AP: http://");
     s_canvas.setTextColor(DISPLAY_FG);
     s_canvas.setCursor(4 + 11*6, 66);
-    s_canvas.print(WIFI_AP_IP);
+    s_canvas.print(g_config.ap_ip.c_str());
+
+    s_canvas.setTextColor(TFT_WHITE);
+    s_canvas.setCursor(4, 76);
+    s_canvas.print("PW: ");
+    s_canvas.setTextColor(DISPLAY_FG);
+    s_canvas.setCursor(4 + 4*6, 76);
+    s_canvas.print(g_config.ap_password.c_str());
 
     // Show STA IP if connected
     if (s.sys_sta_ip.length() > 0) {
         s_canvas.setTextColor(TFT_WHITE);
-        s_canvas.setCursor(4, 78);
+        s_canvas.setCursor(4, 86);
         s_canvas.print("LAN: ");
         s_canvas.setTextColor(TFT_GREEN);
-        s_canvas.setCursor(4 + 5*6, 78);
+        s_canvas.setCursor(4 + 5*6, 86);
         s_canvas.print(s.sys_sta_ip.c_str());
-        canvas_divider(90);
+        canvas_divider(96);
     } else {
-        canvas_divider(80);
+        canvas_divider(88);
     }
 
     s_canvas.setTextColor(TFT_WHITE);
     s_canvas.setTextSize(1);
-    s_canvas.setCursor(4, 98);
+    s_canvas.setCursor(4, 104);
     s_canvas.printf("Clients: ");
     s_canvas.setTextColor(s.sys_clients > 0 ? TFT_GREEN : 0x8410);
     s_canvas.setTextSize(2);
-    s_canvas.setCursor(4, 108);
+    s_canvas.setCursor(4, 114);
     s_canvas.printf("%d", s.sys_clients);
 }
 
