@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dashIO</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>dashIO</h1>
+  <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+  <div class="ws-status">
+    <div class="ws-dot" id="ws-dot"></div>
+    <span id="ws-label">Connecting...</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="nav-item active" data-page="dashboard">
+      <span class="nav-icon">⬛</span> <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item" data-page="media">
+      <span class="nav-icon">🎵</span> <span class="nav-label">Media</span>
+    </div>
+    <div class="nav-item" data-page="sensors">
+      <span class="nav-icon">📡</span> <span class="nav-label">Sensors</span>
+    </div>
+    <div class="nav-item" data-page="radio">
+      <span class="nav-icon">📻</span> <span class="nav-label">Radio</span>
+    </div>
+    <div class="nav-item" data-page="terminal">
+      <span class="nav-icon">⌨️</span> <span class="nav-label">Terminal</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-item" data-page="admin">
+      <span class="nav-icon">⚙️</span> <span class="nav-label">Admin</span>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="status-grid">
+        <div class="status-chip">
+          <div class="chip-dot" id="chip-wifi"></div>
+          <div>
+            <div class="chip-label">WiFi Clients</div>
+            <div class="chip-value" id="dash-clients">0</div>
+          </div>
+        </div>
+        <div class="status-chip">
+          <div class="chip-dot" id="chip-lora"></div>
+          <div>
+            <div class="chip-label">LoRa</div>
+            <div class="chip-value" id="dash-lora">init</div>
+          </div>
+        </div>
+        <div class="status-chip">
+          <div class="chip-dot" id="chip-imu"></div>
+          <div>
+            <div class="chip-label">IMU</div>
+            <div class="chip-value" id="dash-imu">--</div>
+          </div>
+        </div>
+        <div class="status-chip">
+          <div class="chip-dot" id="chip-gps"></div>
+          <div>
+            <div class="chip-label">GPS</div>
+            <div class="chip-value" id="dash-gps">searching</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- System -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">System</span>
+            <span class="card-badge ok">ESP32-S3</span>
+          </div>
+          <div class="card-body">
+            <div class="stat-row">
+              <span class="stat-label">Uptime</span>
+              <span class="stat-value cyan mono" id="sys-uptime">--:--:--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Free Heap</span>
+              <span class="stat-value" id="sys-heap">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">AP SSID</span>
+              <span class="stat-value cyan" id="sys-ssid">dashIO</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">AP IP</span>
+              <span class="stat-value">192.168.4.1</span>
+            </div>
+            <div class="stat-row" id="sta-ip-dash-row" style="display:none">
+              <span class="stat-label">Local IP</span>
+              <span class="stat-value green" id="sta-ip-dash">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Battery -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Battery</span>
+            <span class="card-badge ok" id="bat-badge">--</span>
+          </div>
+          <div class="card-body">
+            <div class="stat-row">
+              <span class="stat-label">Voltage</span>
+              <span class="stat-value" id="bat-voltage">-- V</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Level</span>
+              <span class="stat-value green" id="bat-percent">--%</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Status</span>
+              <span class="stat-value yellow" id="bat-status">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- GPS summary -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">GPS</span>
+            <span class="card-badge warn" id="gps-badge-dash">NO FIX</span>
+          </div>
+          <div class="card-body">
+            <div class="stat-row">
+              <span class="stat-label">Lat</span>
+              <span class="stat-value" id="dash-gps-lat">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Lon</span>
+              <span class="stat-value" id="dash-gps-lon">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Satellites</span>
+              <span class="stat-value green" id="dash-gps-sats">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MEDIA ===== -->
+    <div class="page" id="page-media">
+      <div class="grid">
+        <!-- Microphone -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Microphone</span>
+            <span class="card-badge ok">ES8311</span>
+          </div>
+          <div class="card-body">
+            <div id="meter-bars" class="meter-wrap"></div>
+            <div id="audio-peak-line" class="meter-peak"></div>
+            <div class="stat-row">
+              <span class="stat-label">RMS Level</span>
+              <span class="stat-value cyan" id="audio-level">0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Peak</span>
+              <span class="stat-value yellow" id="audio-peak">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- File Manager -->
+        <div class="card grid-wide">
+          <div class="card-header">
+            <span class="card-title">File Manager</span>
+            <span class="card-badge ok">SD Card</span>
+          </div>
+          <div class="card-body">
+            <div class="file-toolbar">
+              <span class="file-path" id="fm-path">/</span>
+              <button class="btn btn-ghost btn-sm" onclick="fm_up()">← Up</button>
+              <button class="btn btn-ghost btn-sm" onclick="fm_mkdir()">+ Folder</button>
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+                ↑ Upload <input type="file" style="display:none" id="fm-upload-input" multiple onchange="fm_upload(this)">
+              </label>
+              <button class="btn btn-ghost btn-sm" onclick="fm_refresh()">↻ Refresh</button>
+            </div>
+            <div class="file-list" id="fm-list">
+              <div style="padding:20px;text-align:center;color:var(--text-muted)">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SENSORS ===== -->
+    <div class="page" id="page-sensors">
+      <div class="grid">
+        <!-- IMU -->
+        <div class="card grid-wide">
+          <div class="card-header">
+            <span class="card-title">Motion — BMI270</span>
+            <span class="card-badge ok">Accel &amp; Gyro</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-wrap">
+              <canvas id="imu-chart"></canvas>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+              <div class="stat-row"><span class="stat-label">aX</span><span class="stat-value red"   id="imu-ax">-- g</span></div>
+              <div class="stat-row"><span class="stat-label">aY</span><span class="stat-value green" id="imu-ay">-- g</span></div>
+              <div class="stat-row"><span class="stat-label">aZ</span><span class="stat-value cyan"  id="imu-az">-- g</span></div>
+              <div class="stat-row"><span class="stat-label">gX</span><span class="stat-value red"   id="imu-gx">-- °/s</span></div>
+              <div class="stat-row"><span class="stat-label">gY</span><span class="stat-value green" id="imu-gy">-- °/s</span></div>
+              <div class="stat-row"><span class="stat-label">gZ</span><span class="stat-value cyan"  id="imu-gz">-- °/s</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Battery detail -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Battery Detail</span>
+            <span class="card-badge ok" id="bat-badge2">--</span>
+          </div>
+          <div class="card-body">
+            <div class="stat-row">
+              <span class="stat-label">Voltage</span>
+              <span class="stat-value" id="bat-voltage2">-- V</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Level</span>
+              <span class="stat-value green" id="bat-percent2">--%</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Status</span>
+              <span class="stat-value yellow" id="bat-status2">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- GPS detail -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">GPS — ATGM336H</span>
+            <span class="card-badge warn" id="gps-badge">NO FIX</span>
+          </div>
+          <div class="card-body">
+            <div class="stat-row"><span class="stat-label">Latitude</span>  <span class="stat-value" id="gps-lat">--</span></div>
+            <div class="stat-row"><span class="stat-label">Longitude</span> <span class="stat-value" id="gps-lon">--</span></div>
+            <div class="stat-row"><span class="stat-label">Satellites</span><span class="stat-value green" id="gps-sats">0</span></div>
+            <div class="stat-row"><span class="stat-label">HDOP</span>      <span class="stat-value" id="gps-hdop">--</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RADIO ===== -->
+    <div class="page" id="page-radio">
+      <div class="grid">
+        <!-- LoRa -->
+        <div class="card grid-wide">
+          <div class="card-header">
+            <span class="card-title">LoRa — SX1262 868MHz</span>
+            <span class="card-badge" id="lora-badge">init</span>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+              <div class="stat-row"><span class="stat-label">Freq</span> <span class="stat-value cyan"   id="lora-freq">-- MHz</span></div>
+              <div class="stat-row"><span class="stat-label">SF</span>   <span class="stat-value"         id="lora-sf">--</span></div>
+              <div class="stat-row"><span class="stat-label">BW</span>   <span class="stat-value"         id="lora-bw">-- kHz</span></div>
+              <div class="stat-row"><span class="stat-label">Power</span><span class="stat-value yellow" id="lora-power">-- dBm</span></div>
+              <div class="stat-row"><span class="stat-label">RSSI</span> <span class="stat-value red"     id="lora-rssi">-- dBm</span></div>
+              <div class="stat-row"><span class="stat-label">SNR</span>  <span class="stat-value green"   id="lora-snr">-- dB</span></div>
+            </div>
+
+            <div class="stat-label" style="margin-bottom:6px">Packet Log</div>
+            <div class="pkt-log" id="pkt-log">
+              <div style="color:var(--text-muted);padding:8px 0;text-align:center;font-size:12px">Waiting for packets...</div>
+            </div>
+
+            <div class="form-row">
+              <input type="text" class="input" id="lora-tx-input" placeholder="Message to transmit...">
+              <button class="btn btn-primary" onclick="sendLoRaTx()">TX</button>
+            </div>
+
+            <div class="section-title">Configuration</div>
+            <div class="cfg-grid">
+              <div class="cfg-field">
+                <label>Spreading Factor</label>
+                <select id="cfg-sf">
+                  <option value="7">SF7</option><option value="8">SF8</option>
+                  <option value="9">SF9</option><option value="10">SF10</option>
+                  <option value="11">SF11</option><option value="12">SF12</option>
+                </select>
+              </div>
+              <div class="cfg-field">
+                <label>Bandwidth (kHz)</label>
+                <select id="cfg-bw">
+                  <option value="125">125</option>
+                  <option value="250">250</option>
+                  <option value="500">500</option>
+                </select>
+              </div>
+              <div class="cfg-field">
+                <label>TX Power (dBm)</label>
+                <input type="number" id="cfg-power" value="20" min="2" max="22">
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <button class="btn btn-primary btn-sm" onclick="sendLoRaConfig()">Apply Config</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FM Radio placeholder -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">FM Radio</span>
+            <span class="card-badge warn">Not Available</span>
+          </div>
+          <div class="card-body">
+            <p style="color:var(--text-muted);font-size:12px;line-height:1.6">
+              FM Radio requires an external tuner module (e.g. RDA5807M or Si4703 via I2C).
+              The built-in ES8311 is an audio codec only — it cannot receive radio frequencies.
+            </p>
+            <p style="color:var(--text-muted);font-size:11px;margin-top:8px">
+              Connect a compatible I2C tuner to Port A and rebuild to enable this feature.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TERMINAL ===== -->
+    <div class="page" id="page-terminal">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Terminal</span>
+          <span class="card-badge ok" id="term-badge">REPL</span>
+        </div>
+        <div class="card-body" style="padding:10px">
+          <div class="terminal-output" id="term-output">
+            <div class="terminal-line"><span class="t-cyan">dashIO</span> terminal — type <span class="t-green">help</span> for commands</div>
+          </div>
+          <div class="terminal-input-row">
+            <span class="terminal-prompt" id="term-prompt">dashIO:/&gt;</span>
+            <input type="text" class="terminal-input" id="term-input"
+                   placeholder="command..." autocomplete="off" spellcheck="false">
+            <button class="btn btn-primary btn-sm" onclick="termSend()">↵</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN ===== -->
+    <div class="page" id="page-admin">
+      <div class="grid">
+        <!-- AP Config -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">WiFi AP Settings</span>
+          </div>
+          <div class="card-body">
+            <div class="cfg-grid">
+              <div class="cfg-field">
+                <label>SSID</label>
+                <input type="text" id="admin-ssid" value="dashIO">
+              </div>
+              <div class="cfg-field">
+                <label>Password</label>
+                <input type="text" id="admin-pass" value="dashio123">
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <button class="btn btn-primary btn-sm" onclick="admin_saveConfig()">Save &amp; Restart AP</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WiFi Network (STA) -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">WiFi Network</span>
+            <span class="card-badge" id="sta-badge">AP Only</span>
+          </div>
+          <div class="card-body">
+            <div class="stat-row">
+              <span class="stat-label">Mode</span>
+              <span class="stat-value cyan" id="wifi-mode-val">AP</span>
+            </div>
+            <div class="stat-row" id="sta-ip-row" style="display:none">
+              <span class="stat-label">Local IP</span>
+              <span class="stat-value green" id="sta-ip-val">--</span>
+            </div>
+            <div class="cfg-grid" style="margin-top:12px">
+              <div class="cfg-field">
+                <label>Network SSID</label>
+                <input type="text" id="sta-ssid" placeholder="Network name">
+              </div>
+              <div class="cfg-field">
+                <label>Password</label>
+                <input type="password" id="sta-password" placeholder="Password">
+              </div>
+            </div>
+            <div class="file-toolbar" style="margin-top:8px">
+              <button class="btn btn-ghost btn-sm" onclick="wifi_scan()">🔍 Scan</button>
+              <button class="btn btn-primary btn-sm" onclick="wifi_connect()">Connect</button>
+              <button class="btn btn-ghost btn-sm" onclick="wifi_disconnect()">Disconnect</button>
+            </div>
+            <div id="wifi-scan-list" class="wifi-scan-list" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Display -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Display</span>
+          </div>
+          <div class="card-body">
+            <div class="stat-label">TFT Brightness</div>
+            <div class="slider-row">
+              <span class="stat-label">0</span>
+              <input type="range" id="brightness-slider" min="0" max="255" value="200" step="5">
+              <span class="stat-label">255</span>
+              <span class="stat-value cyan" id="brightness-val" style="min-width:30px;text-align:right">200</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Device -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Device</span>
+          </div>
+          <div class="card-body">
+            <!-- Charging Mode -->
+            <div style="margin-bottom:12px">
+              <div class="stat-label" style="margin-bottom:6px">Charging Mode</div>
+              <p style="color:var(--text-muted);font-size:11px;margin-bottom:8px">
+                Dims display to minimum and pauses normal UI. Resumes on toggle off.
+              </p>
+              <button class="btn btn-warning btn-sm" id="charging-btn" onclick="admin_toggleCharging()">
+                Enable Charging Mode
+              </button>
+            </div>
+
+            <!-- USB Drive -->
+            <div style="margin-bottom:12px">
+              <div class="stat-label" style="margin-bottom:6px">USB Drive</div>
+              <p style="color:var(--text-muted);font-size:11px;margin-bottom:8px">
+                Exposes SD card as USB mass storage. Device restarts on eject.
+              </p>
+              <button class="btn btn-ghost btn-sm" onclick="admin_enableUsbMsc()">Enable USB Drive</button>
+            </div>
+
+            <div class="danger-zone">
+              <h3>Danger Zone</h3>
+              <button class="btn btn-danger btn-sm" onclick="admin_restart()">Restart Cardputer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="chart.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
