@@ -14,9 +14,11 @@ jobs:
           fetch-depth: 0
       - name: Mirror to GitLab
         run: |
-          git push --mirror \
-            "https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/raphazilla/${{ github.event.repository.name }}.git"
+          git push --prune \
+            "https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/raphazilla/${{ github.event.repository.name }}.git" \
+            "refs/heads/*:refs/heads/*" "refs/tags/*:refs/tags/*"
       - name: Mirror to Codeberg
         run: |
-          git push --mirror \
-            "https://raphazilla:${{ secrets.CODEBERG_TOKEN }}@codeberg.org/raphazilla/${{ github.event.repository.name }}.git"
+          git push --prune \
+            "https://raphazilla:${{ secrets.CODEBERG_TOKEN }}@codeberg.org/raphazilla/${{ github.event.repository.name }}.git" \
+            "refs/heads/*:refs/heads/*" "refs/tags/*:refs/tags/*"
